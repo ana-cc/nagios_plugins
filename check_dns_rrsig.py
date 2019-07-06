@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import subprocess
 import argparse
 import sys
@@ -13,7 +14,7 @@ def check_expiry(domain,c,w,server):
     p = subprocess.Popen(dig_args, stdout=subprocess.PIPE)
     res = p.communicate()[0]
     res = (res.decode("utf-8")).split('\n')
-    for line in res: 
+    for line in res:
         if line.startswith('SOA'):
             t = line.split(' ')[4]
     if t == None:
@@ -23,15 +24,16 @@ def check_expiry(domain,c,w,server):
         d = datetime.strptime(t,'%Y%m%d%H%M%S')
         present = datetime.now()
         delta = d - present
-     
-        print('Signature expires in %s days' % str(delta.days))
 
         if delta.days < c:
+            print('CRITICAL: Signature for {0} expires in {1} days.'.format(domain, delta.days))
             return CRITICAL
         if delta.days < w:
+            print('WARNING: Signature for {0} expires in {1} days.'.format(domain, delta.days))
             return WARNING
-        else: return OK 
-   
+        else:
+            print('OK: Signature for {0} expires in {1} days.'.format(domain, delta.days))
+            return OK
 
 parser = argparse.ArgumentParser(description='Checks the RRSIG expiry date on the SOA record of a DNSSEC enabled domain')
 
